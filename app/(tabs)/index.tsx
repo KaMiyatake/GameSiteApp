@@ -51,6 +51,7 @@ export default function HomeScreen() {
             style={styles.logo}
             resizeMode="contain"
           />
+          <ThemedText style={styles.versionText}>Version 1.0.0</ThemedText>
         </ThemedView>
 
         {/* 機能紹介セクション */}
@@ -222,6 +223,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: 'center',
     opacity: 0.7,
+  },
+  versionText: {
+    fontSize: 14,
+    color: '#888',
+    marginTop: 8,
+    textAlign: 'center',
   },
   
   // 機能紹介セクション

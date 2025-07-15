@@ -370,7 +370,7 @@ const fetchArticlesFromTopPage = async (): Promise<Article[]> => {
                     {article.publishedDate}
                   </ThemedText>
                   
-                  <TouchableOpacity
+                  {/* <TouchableOpacity
                     style={[styles.readMoreButton, { backgroundColor: Colors[colorScheme ?? 'light'].tint + '20' }]}
                     onPress={() => openArticle(article)}
                   >
@@ -382,7 +382,7 @@ const fetchArticlesFromTopPage = async (): Promise<Article[]> => {
                       name="chevron.right" 
                       color={Colors[colorScheme ?? 'light'].tint}
                     />
-                  </TouchableOpacity>
+                  </TouchableOpacity> */}
                 </View>
               </TouchableOpacity>
             ))}
