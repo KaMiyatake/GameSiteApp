@@ -21,12 +21,15 @@ interface IllustData {
   sortKey: string;
 }
 
+type DisplayMode = 'single' | 'double';
+
 export default function IllustScreen() {
   const colorScheme = useColorScheme();
   const [illusts, setIllusts] = useState<IllustData[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [displayMode, setDisplayMode] = useState<DisplayMode>('double'); // デフォルトは2列表示
 
   // 記事情報を取得
   const fetchArticleData = async () => {
@@ -202,6 +205,17 @@ export default function IllustScreen() {
     }
   };
 
+  // イラスト画像を新しいタブで開く
+  const openIllustInNewTab = async (illustData: IllustData) => {
+    try {
+      await WebBrowser.openBrowserAsync(illustData.imageUrl);
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    } catch (error) {
+      console.error('イラストを開けませんでした:', error);
+      Alert.alert('エラー', 'イラストを開けませんでした');
+    }
+  };
+
   // 記事をブラウザで開く
   const openArticle = async (illustData: IllustData) => {
     try {
@@ -211,6 +225,12 @@ export default function IllustScreen() {
       console.error('ブラウザを開けませんでした:', error);
       Alert.alert('エラー', 'ブラウザを開けませんでした');
     }
+  };
+
+  // 表示モードを切り替え
+  const toggleDisplayMode = (mode: DisplayMode) => {
+    setDisplayMode(mode);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   };
 
   // リフレッシュ
@@ -225,9 +245,13 @@ export default function IllustScreen() {
     fetchIllusts();
   }, []);
 
-  // 縦型イラスト用のサイズ計算（3:4のアスペクト比）
-  const imageWidth = (screenWidth - 45) / 2; // 2列表示
-  const imageHeight = (imageWidth * 4) / 3; // 3:4のアスペクト比
+  // 表示モードに応じたサイズ計算
+  const imageWidth = displayMode === 'single' 
+    ? screenWidth - 30 
+    : (screenWidth - 45) / 2;
+
+  // 1列表示時は3:4の縦長比率を維持、2列表示時も3:4を維持
+  const imageHeight = (imageWidth * 4) / 3;
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: Colors[colorScheme ?? 'light'].background }]}>
@@ -249,6 +273,53 @@ export default function IllustScreen() {
           <ThemedText type="title" style={styles.headerTitle}>
             記事イラスト
           </ThemedText>
+        </ThemedView>
+
+        {/* 表示切り替えボタン */}
+        <ThemedView style={styles.displayModeContainer}>
+          <TouchableOpacity
+            style={[
+              styles.displayModeButton,
+              displayMode === 'single' && [styles.activeModeButton, { backgroundColor: Colors[colorScheme ?? 'light'].tint }]
+            ]}
+            onPress={() => toggleDisplayMode('single')}
+          >
+            <IconSymbol 
+              name="rectangle.fill" 
+              size={20} 
+              color={displayMode === 'single' ? Colors[colorScheme ?? 'light'].background : Colors[colorScheme ?? 'light'].tint}
+            />
+            <ThemedText 
+              style={[
+                styles.modeButtonText,
+                displayMode === 'single' && { color: Colors[colorScheme ?? 'light'].background }
+              ]}
+            >
+              1列
+            </ThemedText>
+          </TouchableOpacity>
+          
+          <TouchableOpacity
+            style={[
+              styles.displayModeButton,
+              displayMode === 'double' && [styles.activeModeButton, { backgroundColor: Colors[colorScheme ?? 'light'].tint }]
+            ]}
+            onPress={() => toggleDisplayMode('double')}
+          >
+            <IconSymbol 
+              name="square.grid.2x2.fill" 
+              size={20} 
+              color={displayMode === 'double' ? Colors[colorScheme ?? 'light'].background : Colors[colorScheme ?? 'light'].tint}
+            />
+            <ThemedText 
+              style={[
+                styles.modeButtonText,
+                displayMode === 'double' && { color: Colors[colorScheme ?? 'light'].background }
+              ]}
+            >
+              2列
+            </ThemedText>
+          </TouchableOpacity>
         </ThemedView>
 
         {loading ? (
@@ -274,18 +345,34 @@ export default function IllustScreen() {
           </ThemedView>
         ) : (
           <ThemedView style={styles.illustsContainer}>
-            <View style={styles.gridContainer}>
+            <View style={[
+              styles.gridContainer,
+              displayMode === 'single' && styles.singleColumnContainer
+            ]}>
               {illusts.map((illust, index) => (
-                <TouchableOpacity
+                <View
                   key={index}
-                  style={[styles.illustCard, { width: imageWidth }]}
-                  onPress={() => openArticle(illust)}
+                  style={[
+                    styles.illustCard,
+                    { width: imageWidth },
+                    displayMode === 'single' && styles.singleColumnCard
+                  ]}
                 >
-                  <View style={styles.illustImageContainer}>
+                  {/* イラスト画像部分 - 画像を新しいタブで開く */}
+                  <TouchableOpacity
+                    style={[
+                      styles.illustImageContainer,
+                      { height: imageHeight }
+                    ]}
+                    onPress={() => openIllustInNewTab(illust)}
+                  >
                     <Image
                       source={{ uri: illust.imageUrl }}
-                      style={[styles.illustImage, { width: imageWidth, height: imageHeight }]}
-                      resizeMode="cover"
+                      style={[
+                        styles.illustImage,
+                        { width: imageWidth, height: imageHeight }
+                      ]}
+                      resizeMode={displayMode === 'single' ? 'contain' : 'cover'}
                       onError={() => {
                         console.log('イラスト画像の読み込みに失敗:', illust.imageUrl);
                       }}
@@ -297,18 +384,36 @@ export default function IllustScreen() {
                         color="white"
                       />
                     </View>
-                  </View>
+                  </TouchableOpacity>
                   
-                  <View style={styles.illustInfo}>
-                    <ThemedText style={styles.illustTitle} numberOfLines={2}>
+                  {/* テキスト情報部分 - 記事ページに遷移 */}
+                  <TouchableOpacity
+                    style={[
+                      styles.illustInfo,
+                      displayMode === 'single' && styles.singleColumnInfo
+                    ]}
+                    onPress={() => openArticle(illust)}
+                  >
+                    <ThemedText 
+                      style={[
+                        styles.illustTitle,
+                        displayMode === 'single' && styles.singleColumnTitle
+                      ]} 
+                      numberOfLines={displayMode === 'single' ? 3 : 2}
+                    >
                       {illust.articleTitle}
                     </ThemedText>
                     
-                    <ThemedText style={styles.illustDate}>
+                    <ThemedText 
+                      style={[
+                        styles.illustDate,
+                        displayMode === 'single' && styles.singleColumnDate
+                      ]}
+                    >
                       {illust.publishedDate}
                     </ThemedText>
-                  </View>
-                </TouchableOpacity>
+                  </TouchableOpacity>
+                </View>
               ))}
             </View>
           </ThemedView>
@@ -344,25 +449,45 @@ const styles = StyleSheet.create({
     paddingBottom: 30,
   },
   headerContainer: {
-    flexDirection: 'row', // 横並び
-    alignItems: 'center', // 縦中央揃え
-    justifyContent: 'center', // 水平方向中央揃え
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
     marginBottom: 20,
     paddingHorizontal: 20,
   },
   headerIcon: {
-    marginBottom: 0, // 下余白をなくす
-    marginRight: 10, // アイコンとテキストの間に余白
+    marginBottom: 0,
+    marginRight: 10,
   },
   headerTitle: {
-    textAlign: 'left', // 横並びなので左寄せ
+    textAlign: 'left',
     fontSize: 24,
-    marginBottom: 0, // 下余白をなくす
+    marginBottom: 0,
   },
-  headerSubtitle: {
-    textAlign: 'center',
+  // 表示切り替えボタンのスタイル
+  displayModeContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginBottom: 20,
+    paddingHorizontal: 20,
+  },
+  displayModeButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    marginHorizontal: 4,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+  },
+  activeModeButton: {
+    borderColor: 'transparent',
+  },
+  modeButtonText: {
     fontSize: 14,
-    opacity: 0.7,
+    fontWeight: '600',
+    marginLeft: 6,
   },
   loadingContainer: {
     alignItems: 'center',
@@ -399,6 +524,10 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     justifyContent: 'space-between',
   },
+  singleColumnContainer: {
+    flexDirection: 'column',
+    alignItems: 'center',
+  },
   illustCard: {
     marginBottom: 20,
     borderRadius: 12,
@@ -413,11 +542,14 @@ const styles = StyleSheet.create({
     elevation: 5,
     backgroundColor: '#ffffff',
   },
+  singleColumnCard: {
+    marginBottom: 24,
+  },
   illustImageContainer: {
     position: 'relative',
+    backgroundColor: '#f8f8f8',
   },
   illustImage: {
-    backgroundColor: '#f0f0f0',
     borderTopLeftRadius: 12,
     borderTopRightRadius: 12,
   },
@@ -435,6 +567,9 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 12,
     borderBottomRightRadius: 12,
   },
+  singleColumnInfo: {
+    padding: 16,
+  },
   illustTitle: {
     fontSize: 12,
     lineHeight: 16,
@@ -442,9 +577,19 @@ const styles = StyleSheet.create({
     color: '#000000',
     fontWeight: '500',
   },
+  singleColumnTitle: {
+    fontSize: 16,
+    lineHeight: 22,
+    marginBottom: 8,
+    fontWeight: '600',
+  },
   illustDate: {
     fontSize: 10,
     color: '#333333',
+  },
+  singleColumnDate: {
+    fontSize: 14,
+    color: '#666666',
   },
   footer: {
     alignItems: 'center',
