@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "GameSiteApp",
-    "slug": "GameSiteApp",
+    "name": "ゲーム賛否アプリ",
+    "slug": "gamesanpi-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "gamesiteapp",
+    "scheme": "gamesanpi",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
@@ -14,7 +14,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#1E1E2C"
       },
       "edgeToEdgeEnabled": true
     },
@@ -31,12 +31,25 @@
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
+          "backgroundColor": "#1E1E2C"
         }
       ]
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "fdc39687-463f-406a-bdf2-1ed2e9081188"
+      }
+    },
+    "owner": "kamiyatake",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/fdc39687-463f-406a-bdf2-1ed2e9081188"
     }
   }
 }

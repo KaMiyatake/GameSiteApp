@@ -20,7 +20,6 @@ export default function TabLayout() {
         tabBarBackground: TabBarBackground,
         tabBarStyle: Platform.select({
           ios: {
-            // Use a transparent background on iOS to show the blur effect
             position: 'absolute',
           },
           default: {},
@@ -29,46 +28,22 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
+          title: 'ホーム',
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
         }}
       />
-      {/* <Tabs.Screen
-        name="explore"
-        options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
-        }}
-      /> */}
-      <Tabs.Screen
-        name="explore"
-        options={{
-          href: null, // これでタブから完全に除外
-        }}
-      />
-      {/* <Tabs.Screen
-        name="date"
-        options={{
-          title: 'Date',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="calendar" color={color} />,
-        }}
-      /> */}
       <Tabs.Screen
         name="news"
         options={{
-          tabBarLabel: 'News',
-          tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="newspaper.fill" color={color} />
-          ),
+          title: 'ニュース',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="newspaper.fill" color={color} />,
         }}
       />
       <Tabs.Screen
         name="illust"
         options={{
-          tabBarLabel: 'Illust',
-          tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="photo.on.rectangle" color={color} />
-          ),
+          title: 'イラスト',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="photo.on.rectangle" color={color} />,
         }}
       />
     </Tabs>
